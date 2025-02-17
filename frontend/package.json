@@ -22,6 +22,8 @@
     "PostCSS": "npm:postcss@^8.5.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-dropzone": "^14.3.5",
+    "react-hot-toast": "^2.5.2",
     "react-router-dom": "^6.29.0",
     "tailwind-merge": "^3.0.1",
     "tailwindcss-animate": "^1.0.7"
