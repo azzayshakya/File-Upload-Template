@@ -1,14 +1,15 @@
-import React, { useState } from 'react';
-import { toast, Toaster } from 'react-hot-toast';
-import { Trash2, ChevronLeft, ChevronRight, Plus, Clock } from 'lucide-react';
+import { useState } from 'react';
 import axios from 'axios';
-
+import { Toaster, toast } from 'react-hot-toast';
+import { Trash2, ChevronLeft, ChevronRight, Plus, Clock } from 'lucide-react';
 const AboutPage = () => {
   const [files, setFiles] = useState([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
   const [uploading, setUploading] = useState(false);
-  const [errors, setErrors] = useState([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  // Allowed file types
+  const allowedTypes = ['application/pdf', 'image/png', 'image/jpeg', 'image/jpg', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
 
+  // Handle file selection and validation
   const handleFileChange = (e) => {
     const newFiles = Array.from(e.target.files).map(file => ({
       file,
@@ -19,31 +20,37 @@ const AboutPage = () => {
     }));
 
     const validatedFiles = newFiles.map(fileObj => {
-      if (fileObj.file.type !== 'application/pdf') {
+      if (!allowedTypes.includes(fileObj.file.type)) {
         return { ...fileObj, error: 'Invalid file type' };
       }
       if (fileObj.file.size > 5 * 1024 * 1024) {
-        return { ...fileObj, error: 'File too large' };
+        return { ...fileObj, error: 'File too large (Max: 5MB)' };
       }
       return fileObj;
     });
 
     setFiles(prev => [...prev, ...validatedFiles]);
-    setErrors(validatedFiles.filter(f => f.error));
     toast.success(`${validatedFiles.filter(f => !f.error).length} files added`);
   };
 
-  const handleDelete = (id) => {
-    setFiles(prev => {
-      const fileToDelete = prev.find(f => f.id === id);
-      if (fileToDelete && fileToDelete.previewUrl) {
-        URL.revokeObjectURL(fileToDelete.previewUrl);
-      }
-      return prev.filter(f => f.id !== id);
-    });
-    toast.success('File removed');
-  };
+  // Handle file deletion
+    // Handle file deletion
+    const handleDelete = (id) => {
+      setFiles(prev => {
+        const fileToDelete = prev.find(f => f.id === id);
+        if (fileToDelete && fileToDelete.previewUrl) {
+          URL.revokeObjectURL(fileToDelete.previewUrl);
+        }
+        return prev.filter(f => f.id !== id);
+      });
+  
+      // Adjust `currentIndex` to avoid out-of-range errors
+      setCurrentIndex(prevIndex => Math.max(0, prevIndex - 1));
+  
+      toast.success('File removed');
+    };
 
+  // Handle file upload
   const handleUpload = async () => {
     const validFiles = files.filter(f => !f.error);
     if (validFiles.length === 0) {
@@ -58,12 +65,9 @@ const AboutPage = () => {
     try {
       await axios.post('http://localhost:5000/api/upload', formData);
       toast.success('Files uploaded successfully');
+      
       // Cleanup object URLs
-      files.forEach(file => {
-        if (file.previewUrl) {
-          URL.revokeObjectURL(file.previewUrl);
-        }
-      });
+      validFiles.forEach(file => URL.revokeObjectURL(file.previewUrl));
       setFiles([]);
     } catch (error) {
       toast.error('Upload failed');
@@ -80,7 +84,7 @@ const AboutPage = () => {
             <div className="flex items-center justify-between mb-8">
               <h1 className="text-2xl font-semibold text-gray-800">Files</h1>
               <label className="cursor-pointer bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors duration-200">
-                <input type="file" multiple accept=".pdf" onChange={handleFileChange} className="hidden" />
+                <input type="file" multiple accept=".pdf, .png, .jpg, .jpeg, .doc, .docx" onChange={handleFileChange} className="hidden" />
                 <Plus size={18} className="inline mr-2" /> Upload File
               </label>
             </div>

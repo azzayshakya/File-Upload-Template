@@ -27,6 +27,7 @@ const express = require('express');
 const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
 const cors = require('cors');
+
 require('dotenv').config();
 
 const app = express();
@@ -48,10 +49,20 @@ const upload = multer({
     fileSize: 5 * 1024 * 1024, // 5MB limit
   },
   fileFilter: (req, file, cb) => {
-    if (file.mimetype === 'application/pdf') {
+    const allowedTypes = [
+      'application/pdf', 
+      'image/png', 
+      'image/jpeg', 
+      'image/jpg', 
+      'application/msword', 
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    ];
+
+    if (allowedTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error('Only PDF files are allowed!'), false);
+      cb(new Error('Invalid file type! Allowed types: PDF, PNG, JPG, JPEG, DOC, DOCX'), false);
+      
     }
   }
 });
@@ -63,7 +74,7 @@ app.post('/api/upload', upload.array('files', 30), async (req, res) => {
       return new Promise((resolve, reject) => {
         const stream = cloudinary.uploader.upload_stream(
           {
-            folder: 'invoices',
+            folder: 'uploads',
             resource_type: 'auto'
           },
           (error, result) => {
