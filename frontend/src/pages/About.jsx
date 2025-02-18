@@ -73,46 +73,43 @@ const AboutPage = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto p-6  shadow-[rgba(100,100,111,0.2)_0px_7px_29px_0px] ">
+    <div className="max-w-7xl mx-auto p-6">
       <Toaster position="top-right" />
       
-      {/* Header Section */}
-            <div className="flex items-center justify-between mb-8">
-              <h1 className="text-2xl font-semibold text-gray-800">Files</h1>
-              <label className="cursor-pointer bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors duration-200">
-                <input type="file" multiple accept=".pdf" onChange={handleFileChange} className="hidden" />
-                <Plus size={18} className="inline mr-2" /> Upload File
-              </label>
-            </div>
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+            <span className="text-purple-600">📄</span>
+          </div>
+          <h1 className="text-xl font-semibold">Invoices</h1>
+        </div>
+      </div>
 
-      <div className="flex gap-8 ">
+      <div className="flex gap-6">
         {/* Left side - File list */}
-        <div className="w-1/3 bg-white rounded-lg  p-5  shadow-[rgba(100,100,111,0.2)_0px_7px_29px_0px]">
-          {/* {errors.length > 0 && (
-            <div className="mb-4 p-4 bg-red-50 rounded-lg border border-red-100">
-              <p className="text-red-600 font-medium mb-2">Errors found:</p>
+        <div className="w-1/3">
+          {errors.length > 0 && (
+            <div className="mb-4 p-4 bg-red-50 rounded-lg">
+              <p className="text-red-600 mb-2">The following errors have been found:</p>
               {errors.map((file, index) => (
                 <div key={index} className="text-red-500 text-sm">{file.name}: {file.error}</div>
               ))}
             </div>
-          )} */}
-        {/* Left Section - File List */}
-        <div className=" bg-white  rounded-lg ">
-          {files.length > 0 ? (
+          )}
 
-          <div className="space-y-3 ">
+          <div className="space-y-2">
             {files.map((fileObj, index) => (
               <div
                 key={fileObj.id}
                 className={`flex items-center justify-between p-3 rounded-lg border ${
                   index === currentIndex ? 'border-purple-500 bg-purple-50' : 
                   fileObj.error ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'
-                } cursor-pointer transition-all duration-200 hover:shadow-sm`}
+                } cursor-pointer`}
                 onClick={() => setCurrentIndex(index)}
               >
                 <div className="flex items-center gap-3">
-                  <div className="text-red-500 text-xs px-2 py-1 bg-white rounded border border-red-200">PDF</div>
-                  <span className={`text-sm font-medium ${fileObj.error ? 'text-red-600' : 'text-gray-700'}`}>
+                  <div className="text-red-500 text-xs px-2 py-1 bg-white rounded">PDF</div>
+                  <span className={`text-sm ${fileObj.error ? 'text-red-600' : 'text-gray-700'}`}>
                     {fileObj.name}
                   </span>
                   {fileObj.error && (
@@ -124,50 +121,74 @@ const AboutPage = () => {
                     e.stopPropagation();
                     handleDelete(fileObj.id);
                   }}
-                  className="text-gray-400 hover:text-red-500 transition-colors duration-200"
+                  className="text-gray-400 hover:text-gray-600"
                 >
                   <Trash2 size={18} />
                 </button>
               </div>
             ))}
           </div>
-          ) : (
-            <div className="h-full flex items-center justify-center text-gray-500 p-12">No files uploaded</div>
+
+          {files.length === 0 && (
+            <div className="text-center py-12">
+              <label className="cursor-pointer inline-block">
+                <input
+                  type="file"
+                  multiple
+                  accept=".pdf"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+                <div className="bg-purple-100 text-purple-600 px-4 py-2 rounded-lg hover:bg-purple-200 inline-flex items-center">
+                  <Plus size={18} className="mr-2" />
+                  Upload Invoices
+                </div>
+              </label>
+            </div>
           )}
-        </div>
         </div>
 
         {/* Right side - PDF preview */}
-        <div className="w-2/3 bg-white rounded-lg  p-5  shadow-[rgba(100,100,111,0.2)_0px_7px_29px_0px]">
+        <div className="w-2/3 bg-gray-50 rounded-lg p-4">
           {files.length > 0 ? (
             <div className="h-full">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
                   <button
                     onClick={() => setCurrentIndex(i => Math.max(0, i - 1))}
                     disabled={currentIndex === 0}
-                    className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-50 transition-colors duration-200"
+                    className="p-1 rounded hover:bg-gray-100 disabled:opacity-50"
                   >
                     <ChevronLeft size={20} />
                   </button>
-                  <span className="text-sm text-gray-600 font-medium">
+                  <span className="text-sm text-gray-600">
                     Invoice {String(currentIndex + 1).padStart(2, '0')} of {String(files.length).padStart(2, '0')}
                   </span>
                   <button
                     onClick={() => setCurrentIndex(i => Math.min(files.length - 1, i + 1))}
                     disabled={currentIndex === files.length - 1}
-                    className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-50 transition-colors duration-200"
+                    className="p-1 rounded hover:bg-gray-100 disabled:opacity-50"
                   >
                     <ChevronRight size={20} />
                   </button>
                 </div>
 
-                <div className="flex items-center gap-3">
-                  
+                <div className="flex items-center gap-2">
+                  <label className="cursor-pointer bg-purple-100 text-purple-600 px-4 py-2 rounded-lg hover:bg-purple-200">
+                    <input
+                      type="file"
+                      multiple
+                      accept=".pdf"
+                      onChange={handleFileChange}
+                      className="hidden"
+                    />
+                    <Plus size={18} className="inline mr-2" />
+                    Add Files
+                  </label>
                   <button
                     onClick={handleUpload}
                     disabled={uploading || files.length === 0}
-                    className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 disabled:opacity-50 transition-colors duration-200"
+                    className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 disabled:opacity-50"
                   >
                     {uploading ? (
                       <>
@@ -181,7 +202,7 @@ const AboutPage = () => {
                 </div>
               </div>
 
-              <div className="h-[calc(100vh-240px)] bg-gray-50 rounded-lg border border-gray-200 overflow-hidden">
+              <div className="h-[calc(100vh-240px)] bg-white rounded border">
                 {files[currentIndex] && !files[currentIndex].error && (
                   <iframe
                     src={files[currentIndex].previewUrl}
