@@ -7,9 +7,10 @@ const HomeTopBar = () => {
       <div className="text-2xl font-semibold cursor-pointer hover:text-yellow-300 transition-all">Company Logo</div>
       <div className="space-x-6 hidden md:flex">
         <Link to="/home" className="hover:text-yellow-300 transition-all">Home</Link>
-        <Link to="/about" className="hover:text-yellow-300 transition-all">About</Link>
-        <Link to="/admin/user" className="hover:text-yellow-300 transition-all">Admin</Link>
-        <Link to="/ceo/manage-team" className="hover:text-yellow-300 transition-all">CEO</Link>
+        <Link to="/SingleFileUpload" className="hover:text-yellow-300 transition-all">SingleFileUpload</Link>
+        <Link to="/MultipleFileUpload" className="hover:text-yellow-300 transition-all">MultipleFileUpload</Link>
+        <Link to="/DummyPage" className="hover:text-yellow-300 transition-all">DummyPage</Link>
+
       </div>
       <div className="md:hidden">
         <button className="text-white p-2 rounded-lg bg-gray-700 hover:bg-gray-800">☰</button>

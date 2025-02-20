@@ -1,7 +1,7 @@
 import cloudinary from "../config/cloudinary.js";
 import fs from "fs";
 
-export const uploadFile = async (req, res) => {
+export const SingleFileUpload = async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: "No file uploaded" });
 
