@@ -1,18 +1,32 @@
+/**
+ * DocumentUploader Component
+ * 
+ * This component provides a user interface for uploading and previewing documents. 
+ * It supports PDF and Word files (.pdf, .doc, .docx) with a maximum of 5 files and a total size limit of 20 MB.
+ * 
+ * Features:
+ * - Multiple file selection with preview for PDFs
+ * - Icon representation for Word documents
+ * - File validation: type, size, and quantity limits
+ * - Delete and upload functionalities with success/error notifications
+ * - Responsive UI using Tailwind CSS
+ */
 import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Trash2, ChevronLeft, ChevronRight, Upload, Loader2, FileText, File } from 'lucide-react';
 // import axios from 'axios';
 import axios from '../apis/uploadApi';
+import toast from 'react-hot-toast';
 
 const DocumentUploader = () => {
-  const [files, setFiles] = useState([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState('');
-  const fileInputRef = useRef(null);
+  const [files, setFiles] = useState([]);  // State to store selected files
+  const [currentIndex, setCurrentIndex] = useState(0);  // State to track current file index for preview
+  const [uploading, setUploading] = useState(false);  // State to track uploading status
+  const [error, setError] = useState('');  // State to handle errors
+  const fileInputRef = useRef(null);  // Reference for hidden file input
 
-  // Expanded allowed file types with MIME types and extensions
+  // Allowed file types with MIME types, icons, and color configurationss
   const allowedTypes = {
     'application/pdf': {
       icon: 'PDF',
@@ -34,29 +48,61 @@ const DocumentUploader = () => {
     }
   };
 
-  // Get accepted file extensions string
+  // Get accepted file extensions as a string
   const acceptedFileTypes = Object.values(allowedTypes)
     .map(type => type.extension)
     .join(',');
 
+  /**
+   * Get a preview URL for the file.
+   * PDFs will be displayed using object URLs.
+   * Word documents are not directly previewable.
+   * 
+   * @param {File} file - The file to generate preview for
+   * @returns {string|null} - Preview URL or null if unsupported
+   */
   const getPreviewUrl = async (file) => {
     if (file.type === 'application/pdf') {
       return URL.createObjectURL(file);
     }
-    // For Word documents, return null as preview is not directly supported
     return null;
   };
 
-  const handleFileChange = async (e) => {
-    const selectedFiles = Array.from(e.target.files || []);
-    
-    if (selectedFiles.length === 0) {
-      return; // No files selected
-    }
+ /**
+   * Handle file selection.
+   * Validates file type, size, and total upload limit.
+   * Generates preview URLs for PDFs.
+   * 
+   * @param {Event} e - Input change event
+   */
+ const handleFileChange = async (e) => {
+  const selectedFiles = Array.from(e.target.files || []);
+  if (selectedFiles.length === 0) return;
 
-    const processedFiles = await Promise.all(selectedFiles.map(async (file) => {
+  // Check if total files exceed the limit of 5
+  if (files.length + selectedFiles.length > 5) {
+    toast.error('You can only upload a maximum of 5 files.');
+    return;
+  }
+  // Check total size limit (20 MB)
+  const currentTotalSize = files.reduce((total, f) => total + f.size, 0);
+  const newTotalSize = selectedFiles.reduce((total, f) => total + f.size, currentTotalSize);
+
+  if (newTotalSize > 20 * 1024 * 1024) {
+    toast.error('Total file size cannot exceed 20 MB.');
+    return;
+  }
+
+  const processedFiles = await Promise.all(
+    selectedFiles.map(async (file) => {
       const isValidType = allowedTypes[file.type];
       const isValidSize = file.size <= 5 * 1024 * 1024;
+
+      if (!isValidSize) {
+        toast.error(`${file.name} is too large (max 5MB).`);
+        return null; // Skip this file
+      }
+
       const previewUrl = await getPreviewUrl(file);
 
       return {
@@ -65,24 +111,33 @@ const DocumentUploader = () => {
         name: file.name,
         type: file.type,
         size: file.size,
-        error: !isValidType ? 'Invalid file type' : !isValidSize ? 'File too large (max 5MB)' : null,
+        error: !isValidType ? 'Invalid file type' : null,
         previewUrl,
         ...(allowedTypes[file.type] || {
           icon: 'FILE',
           color: 'text-gray-600',
-          bgColor: 'bg-gray-50'
-        })
+          bgColor: 'bg-gray-50',
+        }),
       };
-    }));
+    })
+  );
 
-    setFiles(prev => [...prev, ...processedFiles]);
+ // Filter out invalid files
+  const validFiles = processedFiles.filter(file => file !== null);
+
+    setFiles(prev => [...prev, ...validFiles]);
     setError('');
 
     // Reset the input value to allow selecting the same file again
     e.target.value = '';
   };
 
-  // Rest of the component remains the same...
+  /**
+   * Handle deletion of a file.
+   * Releases memory for object URLs.
+   * 
+   * @param {string} id - Unique identifier of the file to delete
+   */
   const handleDelete = (id) => {
     setFiles(prev => {
       const fileToDelete = prev.find(f => f.id === id);
@@ -94,41 +149,58 @@ const DocumentUploader = () => {
 
     setCurrentIndex(prev => Math.min(prev, files.length - 2));
   };
+    /**
+   * Handle file upload.
+   * Sends files to the server using Axios with multipart/form-data.
+   * Displays toast notifications for success or error.
+   */
 
-  const handleUpload = async () => {
-    const validFiles = files.filter(f => !f.error);
-    if (validFiles.length === 0) {
-      setError('No valid files to upload');
-      return;
-    }
+ const handleUpload = async () => {
+  const validFiles = files.filter(f => !f.error);
+  if (validFiles.length === 0) {
+    setError('No valid files to upload');
+    toast.error('No valid files to upload');
+    return;
+  }
 
-    setUploading(true);
-    const formData = new FormData();
-    validFiles.forEach(fileObj => formData.append('files', fileObj.file));
+  setUploading(true);
+  const formData = new FormData();
+  validFiles.forEach(fileObj => formData.append('files', fileObj.file));
 
-    try {
-      await axios.post('/multiple-upload', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      });
+  try {
+    await axios.post('/multiple-upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
 
-      // Clean up object URLs
-      files.forEach(file => {
-        if (file.previewUrl) {
-          URL.revokeObjectURL(file.previewUrl);
-        }
-      });
+    // Clean up object URLs
+    files.forEach(file => {
+      if (file.previewUrl) {
+        URL.revokeObjectURL(file.previewUrl);
+      }
+    });
 
-      setFiles([]);
-      setCurrentIndex(0);
-      setError('');
-    } catch (err) {
-      setError('Upload failed. Please try again.');
-    } finally {
-      setUploading(false);
-    }
-  };
+    setFiles([]);
+    setCurrentIndex(0);
+    setError('');
+    toast.success('Files uploaded successfully!');
+  } catch (err) {
+    setError('Upload failed. Please try again.');
+    toast.error('Upload failed. Please try again.');
+  } finally {
+    setUploading(false);
+  }
+};
+
+  /**
+   * FilePreview Component
+   * Displays preview of the currently selected file.
+   * Supports PDFs and provides icons for Word documents.
+   * 
+   * @param {Object} file - The file object to preview
+   * @returns {JSX.Element|null} - The preview component or null if no file
+   */
 
   const FilePreview = ({ file }) => {
     if (!file) return null;
@@ -288,11 +360,11 @@ const DocumentUploader = () => {
             </div>
           </CardHeader>
           <CardContent>
-            {error && (
+            {/* {error && (
               <div className="mb-4 p-4 bg-red-50 text-red-600 rounded-lg">
                 {error}
               </div>
-            )}
+            )} */}
             <div className="h-[600px] rounded-lg border border-gray-200 bg-gray-50">
               {files.length > 0 ? (
                 <FilePreview file={files[currentIndex]} />
