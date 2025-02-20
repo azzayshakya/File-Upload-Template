@@ -9,7 +9,6 @@ const HomeTopBar = () => {
         <Link to="/home" className="hover:text-yellow-300 transition-all">Home</Link>
         <Link to="/SingleFileUpload" className="hover:text-yellow-300 transition-all">SingleFileUpload</Link>
         <Link to="/MultipleFileUpload" className="hover:text-yellow-300 transition-all">MultipleFileUpload</Link>
-        <Link to="/DummyPage" className="hover:text-yellow-300 transition-all">DummyPage</Link>
 
       </div>
       <div className="md:hidden">

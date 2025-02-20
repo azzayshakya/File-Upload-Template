@@ -9,7 +9,9 @@ const imageFileFilter = (req, file, cb) => {
   const extname = allowedFormats.test(file.originalname.toLowerCase());
 
   if (extname) return cb(null, true);
-  cb(new Error("Unsupported image format! Only JPG, JPEG, and PNG are allowed."));
+  cb(
+    new Error("Unsupported image format! Only JPG, JPEG, and PNG are allowed.")
+  );
 };
 
 // Multiple Document File Filter (PDF, DOC, DOCX)
@@ -18,7 +20,11 @@ const documentFileFilter = (req, file, cb) => {
   const extname = allowedFormats.test(file.originalname.toLowerCase());
 
   if (extname) return cb(null, true);
-  cb(new Error("Unsupported document format! Only PDF, DOC, and DOCX are allowed."));
+  cb(
+    new Error(
+      "Unsupported document format! Only PDF, DOC, and DOCX are allowed."
+    )
+  );
 };
 
 // Single Image Upload

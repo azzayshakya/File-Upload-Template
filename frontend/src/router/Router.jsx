@@ -6,7 +6,6 @@ import RedirectPage from '../pages/common/RedirectPage';
 import HomeUILayout from '../layout/Home/HomeLayout';
 import SingleFileUpload from '@/pages/SingleFileUpload';
 import MultipleFileUpload from '../pages/MultipleFileUpload';
-import DummyPage from '@/pages/DummyFile';
 
 const router = createBrowserRouter(
   [
@@ -31,10 +30,7 @@ const router = createBrowserRouter(
           path: "/MultipleFileUpload",
           element: <MultipleFileUpload />,
         },
-        {
-          path: "/DummyPage",
-          element: <DummyPage />,
-        },
+        
         {
           path: "*",
           element: <NotFoundPage />,

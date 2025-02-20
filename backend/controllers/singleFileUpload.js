@@ -6,8 +6,8 @@ export const SingleFileUpload = async (req, res) => {
 
     const result = await cloudinary.uploader.upload_stream(
       {
-        folder: 'images',
-        resource_type: 'image'
+        folder: "images",
+        resource_type: "image",
       },
       (error, result) => {
         if (error) throw error;
@@ -22,9 +22,8 @@ export const SingleFileUpload = async (req, res) => {
 
     // Directly use buffer from memory storage
     result.end(req.file.buffer);
-
   } catch (error) {
-    console.error('Upload error:', error);
+    console.error("Upload error:", error);
     res.status(500).json({ error: error.message });
   }
 };
