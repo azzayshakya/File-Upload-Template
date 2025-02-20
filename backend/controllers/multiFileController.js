@@ -2,6 +2,10 @@ import cloudinary from '../config/cloudinary.js';
 
 export const MultipleFileUpload = async (req, res) => {
   try {
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ error: "No files uploaded" });
+    }
+
     const uploadPromises = req.files.map(file => {
       return new Promise((resolve, reject) => {
         const stream = cloudinary.uploader.upload_stream(
@@ -15,8 +19,8 @@ export const MultipleFileUpload = async (req, res) => {
           }
         );
 
-        const buffer = Buffer.from(file.buffer);
-        stream.end(buffer);
+        // Directly use buffer from memory storage
+        stream.end(file.buffer);
       });
     });
 
